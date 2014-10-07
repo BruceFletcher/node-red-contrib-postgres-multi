@@ -1,9 +1,11 @@
 {
     "name"          : "node-red-contrib-postgres",
-    "version"       : "0.2",
+    "version"       : "0.3.0",
     "description"   : "A Node-RED node to query PostgreSql",
     "dependencies"  : {
-        "node-postgres-named"   : "2.2.0"
+	    "pg" : "3.5.0",
+        "node-postgres-named" : "2.2.0",
+		"querystring" : "0.2.0"
     },
     "repository" : {
         "type":"git",
@@ -13,7 +15,7 @@
     "keywords": [ "node-red", "postgres", "postgresql" ],
     "node-red"      : {
         "nodes"     : {
-            "PostgreSql": "110-postgres.js"
+            "PostgreSql": "postgres.js"
         }
     },
     "author": {

@@ -88,33 +88,39 @@ function PostgresNode(n) {
     
     var node = this;
 
-    if(this.postgresConfig)
-    {
+    if(this.postgresConfig) {
 		
-		var conString = 'postgres://'+this.postgresConfig.user +':' + this.postgresConfig.password + '@' + this.postgresConfig.hostname + ':' + this.postgresConfig.port + '/' + this.postgresConfig.db;
-		node.clientdb = new pg.Client(conString);
-		named.patch(node.clientdb);
+		var conString = 
+            'postgres://' + 
+            this.postgresConfig.user + ':' + 
+            this.postgresConfig.password + '@' + 
+            this.postgresConfig.hostname + ':' + 
+            this.postgresConfig.port + '/' + 
+            this.postgresConfig.db;
 
-		node.clientdb.connect(function(err){
-				if(err) { node.error(err); }
-				else {
-					node.on('input', 
-						function(msg){
-							if(!msg.queryParameters) msg.queryParameters={};
-							node.clientdb.query(msg.payload,
-										 msg.queryParameters,
-										 function (err, results) {
-											 if(err) { node.error(err); }
-											 else {
-												if(node.output)
-												{
-													msg.payload = results.rows;
-													node.send(msg);
-												}
-											 }
-										 });
-						});
-				}
+		node.on('input', function(msg){
+            pg.connect(conString, function(err, client, done) {
+                if(err) { 
+                    node.error(err); 
+                } else {
+                    named.patch(client);
+    				if(!msg.queryParameters) msg.queryParameters={};
+    				client.query(
+                        msg.payload,
+    					msg.queryParameters,
+    					function (err, results) {
+                            done();
+    					    if(err) { node.error(err); }
+    						else {
+    						   if(node.output) {
+    								msg.payload = results.rows;
+    								node.send(msg);
+    							}
+    					    }
+    					}
+                    );
+                }
+            });
 		});
 	} else {
         this.error("missing postgres configuration");

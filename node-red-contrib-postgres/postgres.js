@@ -63,14 +63,19 @@ function PostgresDatabaseNode(n) {
     this.port = n.port;
     this.db = n.db;
     
-	var credentials = RED.nodes.getCredentials(n.id);
+	var credentials = this.credentials;
 	if (credentials) {
 		this.user = credentials.user;
 		this.password = credentials.password;
 	}
 }
 
-RED.nodes.registerType("postgresdb",PostgresDatabaseNode);
+RED.nodes.registerType("postgresdb",PostgresDatabaseNode,{
+        credentials: {
+            user: {type:"text"},
+            password: {type: "password"}
+        }
+    });
 
 function PostgresNode(n) {
 	RED.nodes.createNode(this,n);

@@ -31,6 +31,11 @@
         <label for="node-config-input-password"><i class="fa fa-lock"></i> Password</label>
         <input type="password" id="node-config-input-password" placeholder="postgres">
     </div>
+    <div class="form-row">
+       <label>&nbsp;</label>
+       <input type="checkbox" id="node-config-input-ssl" style="display: inline-block; width: auto; vertical-align: top;">
+       <label for="node-config-input-ssl" style="width: 70%;">Use SSL</label>
+   </div>
 </script>
 
 <script type="text/javascript">
@@ -40,7 +45,8 @@
         defaults: {
             hostname: { value:"localhost",required:true},
             port: { value: 5432,required:true},
-            db: { value:"postgres",required:true}
+            db: { value:"postgres",required:true},
+            ssl: { value:false }
         },
         credentials: {
             user: {type: "text"},

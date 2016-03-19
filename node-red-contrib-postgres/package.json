@@ -3,9 +3,9 @@
     "version"       : "0.4.1",
     "description"   : "A Node-RED node to query PostgreSql",
     "dependencies"  : {
-	    "pg" : "3.5.0",
-        "node-postgres-named" : "2.2.0",
-		"querystring" : "0.2.0"
+	"pg" : "4.5.1",
+      	"node-postgres-named" : "2.4.0",
+	"querystring" : "0.2.0"
     },
     "repository" : {
         "type":"git",

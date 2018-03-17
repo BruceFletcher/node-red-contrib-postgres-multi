@@ -3,7 +3,7 @@
     "version": "0.6.1",
     "description": "A Node-RED node to query PostgreSql",
     "dependencies": {
-        "pg": "^6.1.5",
+        "pg": "~7.4.1",
         "node-postgres-named": "^2.4.1",
         "querystring": "^0.2.0"
     },
@@ -11,7 +11,7 @@
         "type": "git",
         "url": "https://github.com/krisdaniels/node-red-contrib/tree/master/node-red-contrib-postgres"
     },
-    "license": "Apache",
+    "license": "Apache-2.0",
     "keywords": [
         "node-red",
         "postgres",

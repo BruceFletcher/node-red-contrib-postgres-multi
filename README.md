@@ -1,39 +1,76 @@
-## node-red-contrib-postgres
+## node-red-contrib-postgres-multi
 
-A [Node-RED](http://nodered.org) node to query [PostgreSQL](http://www.postgresql.org/).
+A [Node-RED](http://nodered.org) node to query [PostgreSQL](http://www.postgresql.org/), with multiple query support.
+
+Based on [node-red-contrib-postgres](https://github.com/krisdaniels/node-red-contrib/tree/master/node-red-contrib-postgres) by Kris Daniels.
+
+### Requirements
+
+This module uses JavaScript features only found in Node versions 8+.
 
 ### Install
 
 Run the following command in the root directory of your Node-RED install
 
-    npm install node-red-contrib-postgres
+    npm install node-red-contrib-postgres-multi
 
- The node-red postgres node uses a template node to set the query and uses msg.queryParameters as params for the query.  
- Each property in msg.queryParameters can be used as $propertyName in the query, see the 'setup params' and 'format query' node in the example.  
- The msg it then passed to the postgres node.  
- If you want the output of the query, check the 'Receive output' box in the postgres node.  
- The result of the query is then set on the msg.payload property which can be sent to a http node.
+### Usage
 
-### Example DB 
+Assemble your queries as an array of objects on msg.payload:
 
-    CREATE TABLE public.table1
+    msg.payload = [
+        {
+            query: 'begin',
+        },
+        {
+            query: 'delete from mytable',
+        },
+        {
+            query: 'insert into mytable (id, message) values (1, $hello), (2, $world)',
+            params: {
+                hello: 'Hi there',
+                world: 'O\'Rorke',
+            },
+        },
+        {
+            query: 'commit',
+        },
+    ];
+
+As you can see, this structure allows you to create your own transaction boundaries.
+
+If you want the output of one or more queries, check the 'Receive output' box in the postgres node
+and include an `output: true` member in the query object(s) you expect results from.
+The results are then set on the msg.payload property of the outbound message.
+
+    msg.payload = [
+        {
+            query: 'select message from mytable where id=$1',
+            params: [1],
+            output: true,
+        },
+        {
+            query: 'select message from mytable where id=$1',
+            params: [2],
+            output: true,
+        },
+    ];
+
+    # output:
+
+    [
+        ['Hi there'],
+        ['O\'Rorke']
+    ]
+
+### Example DB
+
+    create table mytable
     (
-        field1 character varying,
-        field2 integer
-    )
-    WITH (
-        OIDS=FALSE
+        id int not null,
+        message char(20)
     );
-    ALTER TABLE public.table1
-      OWNER TO postgres;
-    
-    INSERT INTO public.table1(
-                field1, field2)
-        VALUES ('row1',1);
-    INSERT INTO public.table1(
-                field1, field2)
-        VALUES ('row2',2);
-    
+
 ### Example node-red flow
 
 Import the flow below in an empty sheet in nodered

@@ -1,15 +1,18 @@
 {
-    "name": "node-red-contrib-postgres",
-    "version": "0.6.1",
-    "description": "A Node-RED node to query PostgreSql",
+    "name": "node-red-contrib-postgres-multi",
+    "version": "0.1.0",
+    "description": "A Node-RED node to query PostgreSql, with multi-query support",
     "dependencies": {
         "pg": "~7.4.1",
         "node-postgres-named": "^2.4.1",
         "querystring": "^0.2.0"
     },
+    "engines": {
+        "node": ">=8"
+    },
     "repository": {
         "type": "git",
-        "url": "https://github.com/krisdaniels/node-red-contrib/tree/master/node-red-contrib-postgres"
+        "url": "https://github.com/BruceFletcher/node-red-contrib-postgres-multi"
     },
     "license": "Apache-2.0",
     "keywords": [
@@ -21,9 +24,5 @@
         "nodes": {
             "PostgreSql": "postgres.js"
         }
-    },
-    "author": {
-        "name": "Kris Daniels",
-        "email": "krisdaniels@gmail.com"
     }
 }

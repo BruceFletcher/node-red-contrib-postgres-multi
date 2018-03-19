@@ -14,12 +14,12 @@
  * limitations under the License.
  **/
 
-var Pool = require('pg').Pool;
+var { Pool } = require('pg');
 var named = require('node-postgres-named');
 var querystring = require('querystring');
 
-module.exports = function(RED) {
-  RED.httpAdmin.get('/postgresdb/:id', function(req, res) {
+module.exports = (RED) => {
+  RED.httpAdmin.get('/postgresdb/:id', (req, res) => {
     var credentials = RED.nodes.getCredentials(req.params.id);
     if (credentials) {
       res.send(JSON.stringify({
@@ -31,17 +31,17 @@ module.exports = function(RED) {
     }
   });
 
-  RED.httpAdmin.delete('/postgresdb/:id', function(req, res) {
+  RED.httpAdmin.delete('/postgresdb/:id', (req, res) => {
     RED.nodes.deleteCredentials(req.params.id);
     res.send(200);
   });
 
-  RED.httpAdmin.post('/postgresdb/:id', function(req, res) {
+  RED.httpAdmin.post('/postgresdb/:id', (req, res) => {
     var body = "";
-    req.on('data', function(chunk) {
+    req.on('data', (chunk) => {
       body += chunk;
     });
-    req.on('end', function() {
+    req.on('end', () => {
       var newCreds = querystring.parse(body);
       var credentials = RED.nodes.getCredentials(req.params.id) || {};
       if (newCreds.user == null || newCreds.user == "") {
@@ -59,7 +59,7 @@ module.exports = function(RED) {
     });
   });
 
-  function PostgresDatabaseNode(n) {
+  const PostgresDatabaseNode = n => {
     RED.nodes.createNode(this, n);
     this.hostname = n.hostname;
     this.port = n.port;
@@ -84,7 +84,7 @@ module.exports = function(RED) {
     }
   });
 
-  function PostgresNode(n) {
+  const PostgresNode = n => {
     RED.nodes.createNode(this, n);
 
     var node = this;
@@ -106,7 +106,7 @@ module.exports = function(RED) {
         ssl: node.postgresConfig.ssl
       };
 
-      var handleError = function(err, msg) {
+      var handleError = (err, msg) => {
         node.error(err);
         console.log(err);
         console.log(msg.payload);
@@ -115,39 +115,53 @@ module.exports = function(RED) {
 
       var pool = new Pool(connectionConfig);
 
-      node.on('input', function(msg) {
-        pool.connect(function(err, client, done) {
-          if (err) {
-            handleError(err, msg);
-          } else {
-            named.patch(client);
+      node.on('input', async (msg) => {
+        if (!Array.isArray(msg.payload)) {
+          // Useful error message for transitioning from `postgres` to `postgres-multi`
+          handleError(new Error('msg.payload must be an array of queries'));
+          return;
+        }
 
-            if (!!!msg.queryParameters)
-              msg.queryParameters = {};
+        try {
+          const client = await pool.connect();
 
-            client.query(
-              msg.payload,
-              msg.queryParameters,
-              function(err, results) {
-                done();
-                if (err) {
-                  handleError(err, msg);
-                } else {
-                  if (node.output) {
-                    msg.payload = results.rows;
-                    node.send(msg);
-                  }
-                }
-              }
-            );
+          named.patch(client);
+
+          const queries = msg.payload.slice();
+          const outMsg = Object.assign({}, msg);
+
+          if (node.output) {
+            outMsg.payload = [];
           }
-        });
+
+          try {
+            for (let i=0; i < queries.length; ++i) {
+              const { query, params = {}, output = false } = queries[i];
+              const result = await client.query(query, params);
+
+              if (output && node.output) {
+                outMsg.payload = outMsg.payload.concat(result.rows);
+              }
+            }
+
+            if (node.output) {
+              node.send(outMsg);
+            }
+          } catch(e) {
+            handleError(e);
+          } finally {
+            client.release();
+          }
+
+        } catch(e) {
+          handleError(e);
+        }
       });
     } else {
       this.error("missing postgres configuration");
     }
 
-    this.on("close", function() {
+    this.on("close", () => {
       if (node.clientdb) node.clientdb.end();
     });
   }

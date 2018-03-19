@@ -76,11 +76,23 @@
 
 <script type="text/x-red" data-help-name="postgres">
     <p>A PostgreSql I/O node. </p>
-    <p>Executes the query specified in msg.payload with optional query parameters in msg.queryParameters</p>
-    <p>The queryParameters in the query must be specified as $propertyname</p>
+    <p>Executes the array of queries specified in msg.payload with optional query parameters and per-query output selection</p>
+    <p>Your msg.payload should be an array of objects like:</p>
+    <pre>
+        {
+            query: 'insert into mytable (id, message) values (1, $hello), (2, $world)',
+            params: {
+                hello: 'Hi there',
+                world: 'O\'Rorke',
+            },
+            output: false,
+        }
+    </pre>
+    <p>Note that <code>params</code> and <code>output</code> are optional fields.</p>
+    <p>Query parameters may be specified positionally or as $propertyname</p>
     <p>See the node-postgres-named package for more info</p>
     <p>When receiving data from the query, the msg.payload on the output will be a json array of the returned records</p>
-    
+
 </script>
 
 <script type="text/javascript">
@@ -104,17 +116,17 @@
 				return this.name?"node_label_italic":"";
 			},
 			oneditprepare: function() {
-				
+
 				$( "#node-input-output" ).prop( "checked", this.output );
 				$("#node-input-name").focus();
-				
+
 			},
 			oneditsave: function() {
 
 				var hasOutput = $( "#node-input-output" ).prop( "checked" );
 				this.outputs = hasOutput ? 1:0;
-				
+
 			}
 		});
-		
+
 </script>

@@ -59,7 +59,7 @@ module.exports = (RED) => {
     });
   });
 
-  const PostgresDatabaseNode = n => {
+  const PostgresDatabaseNode = function(n) {
     RED.nodes.createNode(this, n);
     this.hostname = n.hostname;
     this.port = n.port;
@@ -84,7 +84,7 @@ module.exports = (RED) => {
     }
   });
 
-  const PostgresNode = n => {
+  const PostgresNode = function(n) {
     RED.nodes.createNode(this, n);
 
     var node = this;
@@ -148,13 +148,13 @@ module.exports = (RED) => {
               node.send(outMsg);
             }
           } catch(e) {
-            handleError(e);
+            handleError(e, msg);
           } finally {
             client.release();
           }
 
         } catch(e) {
-          handleError(e);
+          handleError(e, msg);
         }
       });
     } else {

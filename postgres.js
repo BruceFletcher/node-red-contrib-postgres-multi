@@ -110,7 +110,6 @@ module.exports = (RED) => {
         node.error(err);
         console.log(err);
         console.log(msg.payload);
-        console.log(msg.queryParameters);
       };
 
       var pool = new Pool(connectionConfig);
@@ -160,10 +159,6 @@ module.exports = (RED) => {
     } else {
       this.error("missing postgres configuration");
     }
-
-    this.on("close", () => {
-      if (node.clientdb) node.clientdb.end();
-    });
   }
 
   RED.nodes.registerType("postgres", PostgresNode);

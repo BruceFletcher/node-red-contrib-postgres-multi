@@ -4,6 +4,17 @@ A [Node-RED](http://nodered.org) node to query [PostgreSQL](http://www.postgresq
 
 Based on [node-red-contrib-postgres](https://github.com/krisdaniels/node-red-contrib/tree/master/node-red-contrib-postgres) by Kris Daniels.
 
+### Compatibility
+
+This module is designed assuming you will only use this one or Kris' original version in a project, but
+not both at the same time. You can replace one with the other in your project and your flows will remain
+connected.
+
+* The configuration code is identical, so your database connection configuration should need no changes.
+* The output format is identical (assuming equivalent queries)
+* The input format is significantly different, and will require updates on any block generating
+  queries to be passed to Postgres. (The queries shouldn't change, just the encapsulating data structure.)
+
 ### Requirements
 
 This module uses JavaScript features only found in Node versions 8+.

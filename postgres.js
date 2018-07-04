@@ -107,7 +107,10 @@ module.exports = (RED) => {
       };
 
       var handleError = (err, msg) => {
-        node.error(err);
+        //node.error(msg); This line is committed and edited to take the msg object also.
+        // This allows the error to be caught with a Catch node.
+        // Refer - https://iot.stackexchange.com/a/3144/185
+        node.error(err, msg);
         console.log(err);
         console.log(msg.payload);
       };

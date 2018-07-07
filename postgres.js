@@ -137,16 +137,22 @@ module.exports = (RED) => {
           }
 
           try {
+            // Count of rows returned by a query
+            var queryCounts = [];
             for (let i=0; i < queries.length; ++i) {
               const { query, params = {}, output = false } = queries[i];
               const result = await client.query(query, params);
 
               if (output && node.output) {
+                // Save count of rows returned by a query
+                queryCounts.push(result.rows.length);
                 outMsg.payload = outMsg.payload.concat(result.rows);
               }
             }
 
             if (node.output) {
+              // Save count of rows in payload
+              outMsg.payload.queryCounts = queryCounts;
               node.send(outMsg);
             }
           } catch(e) {

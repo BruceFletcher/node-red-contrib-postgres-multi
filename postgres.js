@@ -136,7 +136,7 @@ module.exports = (RED) => {
           }
           
           var queryError = false;
-          var queryCounts = [];
+          var _queryCounts = [];
           for (let i=0; i < queries.length; ++i) {
             try {
               const { query, params = {}, output = false } = queries[i];
@@ -144,22 +144,22 @@ module.exports = (RED) => {
   
               if (output && node.output) {
                 // Save count of rows returned by a query
-                queryCounts.push(result.rows.length);
+                _queryCounts.push(result.rows.length);
                 outMsg.payload = outMsg.payload.concat(result.rows);
               }
             } catch (e) {
               // Assign -1 to result count to indicate query failure
-              queryCounts.push(-1);
+              _queryCounts.push(-1);
               handleError(e, msg);
             } finally {
-              msg.queryCounts = queryCounts;
+              msg._queryCounts = _queryCounts;
             }
           }
           client.release();
 
           if (node.output) {
             // Save count of rows in payload
-            outMsg.queryCounts = queryCounts;
+            outMsg._queryCounts = _queryCounts;
             node.send(outMsg);
           }
         } catch(e) {

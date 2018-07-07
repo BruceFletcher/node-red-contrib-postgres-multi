@@ -152,7 +152,7 @@ module.exports = (RED) => {
 
             if (node.output) {
               // Save count of rows in payload
-              outMsg.payload = {"queryCounts" : queryCounts};
+              outMsg.queryCounts = queryCounts;
               node.send(outMsg);
             }
           } catch(e) {

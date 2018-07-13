@@ -107,7 +107,9 @@ module.exports = (RED) => {
       };
 
       var handleError = (err, msg) => {
-        node.error(err);
+        //node.error(msg); This line is committed and edited to take the msg object also.
+        // This allows the error to be caught with a Catch node.
+        node.error(err, msg);
         console.log(err);
         console.log(msg.payload);
       };
@@ -132,26 +134,34 @@ module.exports = (RED) => {
           if (node.output) {
             outMsg.payload = [];
           }
-
-          try {
-            for (let i=0; i < queries.length; ++i) {
+          
+          var queryError = false;
+          var _queryCounts = [];
+          for (let i=0; i < queries.length; ++i) {
+            try {
               const { query, params = {}, output = false } = queries[i];
               const result = await client.query(query, params);
-
+  
               if (output && node.output) {
+                // Save count of rows returned by a query
+                _queryCounts.push(result.rows.length);
                 outMsg.payload = outMsg.payload.concat(result.rows);
               }
+            } catch (e) {
+              // Assign -1 to result count to indicate query failure
+              _queryCounts.push(-1);
+              handleError(e, msg);
+            } finally {
+              msg._queryCounts = _queryCounts;
             }
-
-            if (node.output) {
-              node.send(outMsg);
-            }
-          } catch(e) {
-            handleError(e, msg);
-          } finally {
-            client.release();
           }
+          client.release();
 
+          if (node.output) {
+            // Save count of rows in payload
+            outMsg._queryCounts = _queryCounts;
+            node.send(outMsg);
+          }
         } catch(e) {
           handleError(e, msg);
         }

@@ -116,7 +116,7 @@ module.exports = (RED) => {
 
       var pool = new Pool(connectionConfig);
 
-      node.on('input', function(msg, send, done) {
+      node.on('input', async (msg, send, done) => {
         if (!Array.isArray(msg.payload)) {
           // Useful error message for transitioning from `postgres` to `postgres-multi`
           handleError(new Error('msg.payload must be an array of queries'));
@@ -124,58 +124,55 @@ module.exports = (RED) => {
         }
 
         try {
-          pool.connect().then(client => {
-            named.patch(client);
+          const client = await pool.connect();
 
-            const queries = msg.payload.slice();
-            const outMsg = Object.assign({}, msg);
+          named.patch(client);
 
-            if (node.output) {
-              outMsg.payload = [];
-            }
-            const promises = [];
-            var queryError = false;
-            var _queryCounts = [];
-            for (let i=0; i < queries.length; ++i) {
-                const { query, params = {}, output = false } = queries[i];
-                promises.push(client.query(query, params));
-            }
-            var results = Promise.all(promises).then((res)=>{return res;})
-            for (let i=0; i < queries.length; ++i) {              
+          const queries = msg.payload.slice();
+          const outMsg = Object.assign({}, msg);
+
+          if (node.output) {
+            outMsg.payload = [];
+          }
+          
+          var queryError = false;
+          var _queryCounts = [];
+          for (let i=0; i < queries.length; ++i) {
+            try {
               const { query, params = {}, output = false } = queries[i];
-              var result = results[i];
-              try{
-                  if (output && node.output) {
-                    // Save count of rows returned by a query
-                    _queryCounts.push(result.rows.length);
-                    outMsg.payload = outMsg.payload.concat(result.rows);
-                  }
-                } catch (e) {
-                  // Assign -1 to result count to indicate query failure
-                  _queryCounts.push(-1);
-                  handleError(e, msg);
-                } finally {
-                  msg._queryCounts = _queryCounts;
-                }
+              const result = await client.query(query, params);
+  
+              if (output && node.output) {
+                // Save count of rows returned by a query
+                _queryCounts.push(result.rows.length);
+                outMsg.payload = outMsg.payload.concat(result.rows);
               }
-            client.release();
-
-            if (node.output) {
-              // Save count of rows in payload
-              outMsg._queryCounts = _queryCounts;
-              node.send(outMsg);
+            } catch (e) {
+              // Assign -1 to result count to indicate query failure
+              _queryCounts.push(-1);
+              handleError(e, msg);
+            } finally {
+              msg._queryCounts = _queryCounts;
             }
-        });
+          }
+          client.release();
+
+          if (node.output) {
+            // Save count of rows in payload
+            outMsg._queryCounts = _queryCounts;
+            node.send(outMsg);
+          }
         } catch(e) {
           handleError(e, msg);
         }
         if (done) {
           done();
-        }
+      }
       });
     } else {
       this.error("missing postgres configuration");
     }
+
   }
 
   RED.nodes.registerType("postgres", PostgresNode);

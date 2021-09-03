@@ -3,7 +3,7 @@
     "version": "0.2.0",
     "description": "A Node-RED node to query PostgreSql, with multi-query support",
     "dependencies": {
-        "pg": "~7.4.1",
+        "pg": "~8.7.1",
         "node-postgres-named": "^2.4.1",
         "querystring": "^0.2.0"
     },

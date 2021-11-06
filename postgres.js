@@ -116,7 +116,7 @@ module.exports = (RED) => {
 
       var pool = new Pool(connectionConfig);
 
-      node.on('input', async (msg) => {
+      node.on('input', async (msg, send, done) => {
         if (!Array.isArray(msg.payload)) {
           // Useful error message for transitioning from `postgres` to `postgres-multi`
           handleError(new Error('msg.payload must be an array of queries'));
@@ -165,10 +165,14 @@ module.exports = (RED) => {
         } catch(e) {
           handleError(e, msg);
         }
+        if (done) {
+          done();
+      }
       });
     } else {
       this.error("missing postgres configuration");
     }
+
   }
 
   RED.nodes.registerType("postgres", PostgresNode);
